@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { ConverterResult } from 'src/app/models/converter-result';
+import { HistoryService } from 'src/app/services/history.service';
 
 @Component({
   selector: 'app-history',
@@ -7,9 +9,14 @@ import { Component, OnInit } from '@angular/core';
 })
 export class HistoryComponent implements OnInit {
 
-  constructor() { }
+  title = 'Converter Results History';
+
+  results: ConverterResult[] | undefined;
+
+  constructor(private historyService: HistoryService) { }
 
   ngOnInit(): void {
+    this.results = this.historyService.getResults();
   }
 
 }

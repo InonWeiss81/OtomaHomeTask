@@ -1,1 +1,32 @@
-<p>converter works!</p>
+<div class="converter-container">
+    <div class="header">
+        <h2>
+            {{ title }}
+        </h2>
+    </div>
+    <div class="form-wrapper">
+        <form [formGroup]="converterForm">
+
+            <label for="converter-amount">Amount: </label>
+            <input type="number" id="converter-amount" formControlName="amount"/>
+
+            <label for="converter-from">From: </label>
+            <select id="converter-from" formControlName="from">
+                <option *ngFor="let currencyCode of currencyCodes" [ngValue]="currencyCode">
+                    {{ currencyCode }}
+                </option>
+            </select>
+
+            <label for="converter-to">To: </label>
+            <select id="converter-to" formControlName="to">
+                <option *ngFor="let currencyCode of currencyCodes" [ngValue]="currencyCode">
+                    {{ currencyCode }}
+                </option>
+            </select>
+
+        </form>
+    </div>
+    <div class="output-container">
+        <app-converter-result [converterResult]="converterResult"></app-converter-result>
+    </div>
+</div>

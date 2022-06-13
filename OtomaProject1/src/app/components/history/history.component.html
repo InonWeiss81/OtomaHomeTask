@@ -1,1 +1,44 @@
-<p>history works!</p>
+<div class="history-container">
+    <div class="header">
+        <h2>
+            {{ title }}
+        </h2>
+    </div>
+    <div class="results-container">
+        <div class="table-container" *ngIf="results && results.length > 0 else noResults">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Amount</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let result of results">
+                        <td>
+                            {{ result.inputAmount }}
+                        </td>
+                        <td>
+                            {{ result.converterData.from }}
+                        </td>
+                        <td>
+                            {{ result.converterData.to }}
+                        </td>
+                        <td>
+                            <app-converter-result [converterResult]="result"></app-converter-result>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<ng-template #noResults>
+    <div class="no-results-wrapper">
+
+    </div>
+</ng-template>
