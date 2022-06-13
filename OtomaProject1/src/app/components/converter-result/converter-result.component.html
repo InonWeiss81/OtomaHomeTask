@@ -1,5 +1,7 @@
-<span>{{ converterResult?.fromSymbol }}</span>
-<span>{{ converterResult?.inputAmount | number: '1.2-2' }}</span>
-=
-<span>{{ converterResult?.toSymbol }}</span>
-<span>{{ converterResult?.outputAmount | number: '1.2-2' }}</span>
+<div *ngIf="converterResult && converterResult.inputAmount && converterResult.inputAmount > 0">
+    <span>{{ converterResult.fromSymbol }}</span>
+    <span>{{ converterResult.inputAmount | number: '1.2-2' }}</span>
+    {{ converterResult.inputAmount ? '=' : '' }}
+    <span>{{ converterResult.toSymbol }}</span>
+    <span>{{ converterResult.outputAmount | number: '1.2-2' }}</span>
+</div>

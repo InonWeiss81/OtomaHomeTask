@@ -6,6 +6,7 @@
     </div>
     <div class="results-container">
         <div class="table-container" *ngIf="results && results.length > 0 else noResults">
+            <button class="btn btn-danger" (click)="clearHistory()">ClearHistory</button>
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -39,6 +40,8 @@
 
 <ng-template #noResults>
     <div class="no-results-wrapper">
-
+        <h5>
+            Currently there are no results to show...
+        </h5>
     </div>
 </ng-template>

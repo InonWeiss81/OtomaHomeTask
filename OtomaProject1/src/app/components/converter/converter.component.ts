@@ -5,7 +5,8 @@ import { Converter } from 'src/app/models/converter';
 import { getCurrencySymbol } from '@angular/common';
 import { ConverterResult } from 'src/app/models/converter-result';
 import { HistoryService } from 'src/app/services/history.service';
-import { of, Subscription } from 'rxjs';
+import { debounceTime, of, Subscription } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-converter',
@@ -21,6 +22,9 @@ export class ConverterComponent implements OnInit, OnDestroy {
 
   converterResult: ConverterResult;
 
+  showSpinner: boolean = false;
+  debounceTime = 1000;
+
   converterForm!: FormGroup;
 
   formSub: Subscription | undefined;
@@ -35,6 +39,20 @@ export class ConverterComponent implements OnInit, OnDestroy {
     this.bindOnChanges();
   }
 
+  private resetConverterResult() {
+    return  {
+      fromSymbol: '',
+      inputAmount: null,
+      outputAmount: null,
+      toSymbol: '',
+      converterData: {
+        amount: null,
+        from: '',
+        to: ''
+      }
+    };
+  }
+
   buildForm() {
     this.converterForm = this.fb.group({
       amount: [''],
@@ -44,19 +62,11 @@ export class ConverterComponent implements OnInit, OnDestroy {
   }
 
   bindOnChanges(): void {
-    this.formSub = this.converterForm.valueChanges.subscribe(val => {
+    this.formSub = this.converterForm.valueChanges.pipe(
+      tap(_ => this.setSpinner(true)), debounceTime(this.debounceTime))
+      .subscribe(val => {
       let modelValue = <Converter>val;
-      if (modelValue.amount && modelValue.from.length > 0 && modelValue.to.length > 0 && this.converterResult) {
-        this.converterResult.inputAmount = modelValue.amount;
-        this.converterResult.fromSymbol = getCurrencySymbol(modelValue.from, 'narrow');
-        this.converterResult.toSymbol = getCurrencySymbol(modelValue.to, 'narrow');
-        this.converterResult.converterData = modelValue;
-        of(this.getConversionData(modelValue.amount, modelValue.from, modelValue.to)).subscribe(
-          () => {
-            this.historyService.addResult(this.converterResult);
-          }
-        );
-      }
+      this.executeRequest(modelValue);
     });
   }
 
@@ -64,7 +74,7 @@ export class ConverterComponent implements OnInit, OnDestroy {
     this.currencySub = this.converterService.getCurrencies().subscribe(
       data => {
         this.currencyCodes = Object.keys(data);
-        this.converterForm.controls['amount'].patchValue(1);
+        this.converterForm.controls['amount'].patchValue(null);
         this.converterForm.controls['from'].patchValue(this.currencyCodes.find(x => x === 'USD') ? 'USD' : this.currencyCodes[0]);
         this.converterForm.controls['to'].patchValue(this.currencyCodes.find(x => x === 'ILS') ? 'ILS' : this.currencyCodes[1]);
       }
@@ -74,6 +84,24 @@ export class ConverterComponent implements OnInit, OnDestroy {
   //#endregion initialize methods
 
   //#region other methods
+  executeRequest(modelValue: Converter) {
+    if (modelValue.amount && modelValue.from.length > 0 && modelValue.to.length > 0 && this.converterResult) {
+      this.converterResult.inputAmount = modelValue.amount;
+      this.converterResult.fromSymbol = getCurrencySymbol(modelValue.from, 'narrow');
+      this.converterResult.toSymbol = getCurrencySymbol(modelValue.to, 'narrow');
+      this.converterResult.converterData = modelValue;
+      of(this.getConversionData(modelValue.amount, modelValue.from, modelValue.to)).subscribe(
+        () => {
+          this.showSpinner = false;
+        }
+      );
+    }
+    else {
+      this.converterResult = this.resetConverterResult();
+      this.showSpinner = false;
+    }
+  }
+
   getConversionData(amount: number, from: string, to: string) {
     if (from == to) {
       this.converterResult.outputAmount = amount;
@@ -84,10 +112,16 @@ export class ConverterComponent implements OnInit, OnDestroy {
         let key = Object.keys(data.rates)[0];
         if (this.converterResult) {
           this.converterResult.outputAmount = <number><unknown>{ ...data.rates }[key];
+          this.historyService.addResult(this.converterResult);
         }
       }
     );
   }
+
+  setSpinner(show: boolean) {
+    this.showSpinner = this.converterForm.dirty && show;
+  }
+
   //#endregion other methods
 
   //#region end lifecycle hook
@@ -105,17 +139,10 @@ export class ConverterComponent implements OnInit, OnDestroy {
     private historyService: HistoryService,
     private fb: FormBuilder
   ) {
-    this.converterResult = {
-      fromSymbol: '',
-      inputAmount: 1,
-      outputAmount: null,
-      toSymbol: '',
-      converterData: {
-        amount: 1,
-        from: '',
-        to: ''
-      }
-    }
+    
+    this.converterResult = this.resetConverterResult();
   }
+
+
   //#endregion cTor
 }

@@ -1,5 +1,5 @@
 export interface Converter {
-    amount: number,
+    amount: number | null,
     from: string,
     to: string
 }

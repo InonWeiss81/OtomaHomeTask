@@ -1,7 +1,7 @@
 import { Converter } from "./converter";
 
 export interface ConverterResult {
-    inputAmount: number;
+    inputAmount: number | null;
     outputAmount: number | null;
     fromSymbol: string ;
     toSymbol: string;

@@ -26,7 +26,13 @@
 
         </form>
     </div>
-    <div class="output-container">
+    <div class="output-container" *ngIf="!showSpinner else spinner">
         <app-converter-result [converterResult]="converterResult"></app-converter-result>
     </div>
 </div>
+
+<ng-template #spinner>
+    <div class="spinner-border text-primary" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+</ng-template>
